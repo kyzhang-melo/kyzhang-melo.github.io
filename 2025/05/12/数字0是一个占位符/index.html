@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.23.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="数字0是一个占位符&ensp;&ensp;&ensp;&ensp;撰写本文的动机主要源于近期阅读了结城浩所著的《程序员的数学》。诚然，受日常生活中物理世界的影响，人们通常认为数字0代表无意义，例如：0个苹果、电池电量为0、存款余额为0等等。而占位符则是程序员更熟悉的一个概念，用于表示该位置在将来会被替换为其他值，例如：C语言中的printf(&quot;%d\n&quot;, a);中的%d就是一">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数字0是一个占位符">
+<meta property="og:url" content="http://example.com/2025/05/12/%E6%95%B0%E5%AD%970%E6%98%AF%E4%B8%80%E4%B8%AA%E5%8D%A0%E4%BD%8D%E7%AC%A6/index.html">
+<meta property="og:site_name" content="Melo&#39;s Blog">
+<meta property="og:description" content="数字0是一个占位符&ensp;&ensp;&ensp;&ensp;撰写本文的动机主要源于近期阅读了结城浩所著的《程序员的数学》。诚然，受日常生活中物理世界的影响，人们通常认为数字0代表无意义，例如：0个苹果、电池电量为0、存款余额为0等等。而占位符则是程序员更熟悉的一个概念，用于表示该位置在将来会被替换为其他值，例如：C语言中的printf(&quot;%d\n&quot;, a);中的%d就是一">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-05-12T11:37:04.000Z">
+<meta property="article:modified_time" content="2025-05-12T13:17:01.247Z">
+<meta property="article:author" content="Kaiyuan Zhang">
+<meta property="article:tag" content="算法">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://example.com/2025/05/12/%E6%95%B0%E5%AD%970%E6%98%AF%E4%B8%80%E4%B8%AA%E5%8D%A0%E4%BD%8D%E7%AC%A6/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://example.com/2025/05/12/%E6%95%B0%E5%AD%970%E6%98%AF%E4%B8%80%E4%B8%AA%E5%8D%A0%E4%BD%8D%E7%AC%A6/","path":"2025/05/12/数字0是一个占位符/","title":"数字0是一个占位符"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>数字0是一个占位符 | Melo's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Melo's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">Life is short, make it more wonderful!</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%B0%E5%AD%970%E6%98%AF%E4%B8%80%E4%B8%AA%E5%8D%A0%E4%BD%8D%E7%AC%A6"><span class="nav-number">1.</span> <span class="nav-text">数字0是一个占位符</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%AF%B4%E6%95%B0%E5%AD%970%E6%98%AF%E4%B8%80%E4%B8%AA%E5%8D%A0%E4%BD%8D%E7%AC%A6"><span class="nav-number">1.1.</span> <span class="nav-text">为什么说数字0是一个占位符</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E5%AD%970%E4%BD%9C%E4%B8%BA%E4%B8%80%E4%B8%AA%E5%8D%A0%E4%BD%8D%E7%AC%A6%E5%9C%A8%E7%BC%96%E7%A8%8B%E5%AE%9E%E8%B7%B5%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8"><span class="nav-number">1.2.</span> <span class="nav-text">数字0作为一个占位符在编程实践中的应用</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Kaiyuan Zhang</p>
+  <div class="site-description" itemprop="description">欢迎来到我的博客</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">3</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2025/05/12/%E6%95%B0%E5%AD%970%E6%98%AF%E4%B8%80%E4%B8%AA%E5%8D%A0%E4%BD%8D%E7%AC%A6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Kaiyuan Zhang">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Melo's Blog">
+      <meta itemprop="description" content="欢迎来到我的博客">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="数字0是一个占位符 | Melo's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          数字0是一个占位符
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-05-12 19:37:04 / 修改时间：21:17:01" itemprop="dateCreated datePublished" datetime="2025-05-12T19:37:04+08:00">2025-05-12</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="数字0是一个占位符"><a href="#数字0是一个占位符" class="headerlink" title="数字0是一个占位符"></a>数字0是一个占位符</h1><p>&ensp;&ensp;&ensp;&ensp;撰写本文的动机主要源于近期阅读了结城浩所著的《程序员的数学》。诚然，受日常生活中物理世界的影响，人们通常认为数字0代表无意义，例如：0个苹果、电池电量为0、存款余额为0等等。而占位符则是程序员更熟悉的一个概念，用于表示该位置在将来会被替换为其他值，例如：C语言中的<code>printf(&quot;%d\n&quot;, a);</code>中的<code>%d</code>就是一个占位符，在打印输出的时候将使用变量<code>a</code>的值来替换。同理，函数中的形参也是一个占位符。倘若我们分别从数学和计算机科学的角度出发，似乎很难将数字0和占位符的概念联系在一起。然而，数字0并不是没有意义，它像占位符一样，反而意味着所有。</p>
+<h2 id="为什么说数字0是一个占位符"><a href="#为什么说数字0是一个占位符" class="headerlink" title="为什么说数字0是一个占位符"></a>为什么说数字0是一个占位符</h2><p>&ensp;&ensp;&ensp;&ensp;阿拉伯数字是按位计数的，无论是十进制、二进制、十六进制还是八进制，不同位上的数字都有不同的意义。例如，十进制数字2503表示有2个1000、5个100、0个10和3个1。在这里，虽然在十位上“没有数字”，但不能省略。于是，数字0占着十位以保证高于它的数字不会产生错位。换句话说，在按位计数法中，数字0作为占位符存在的意义是不可或缺的。</p>
+<p>&ensp;&ensp;&ensp;&ensp;除了按位计数法之外，在指数法则中，数字0还扮演着衔接整数和有理小数之间的桥梁。中小学的数学课告诉我们任何一个正整数的0次方均等于1。但根据$10^2$即是“2个10相乘”，$10^1$即是“1个10相乘”来看，$10^0$似乎应该是“0个10相乘”。但如果我们抛开“$10^n$即是$n$个10相乘”这样的定义，从目前掌握的知识来类推一下，不难得出如下所示的等式：</p>
+<p>&ensp;&ensp;&ensp;&ensp;$10^3 &#x3D; 1000$</p>
+<p>&ensp;&ensp;&ensp;&ensp;$10^2 &#x3D; 100$</p>
+<p>&ensp;&ensp;&ensp;&ensp;$10^1 &#x3D; 10$</p>
+<p>&ensp;&ensp;&ensp;&ensp;$10^0 &#x3D; ?$</p>
+<p>&ensp;&ensp;&ensp;&ensp;$10^{-1} &#x3D; 1&#x2F;10$</p>
+<p>&ensp;&ensp;&ensp;&ensp;$10^{-2} &#x3D; 1&#x2F;100$</p>
+<p>&ensp;&ensp;&ensp;&ensp;$10^{-3} &#x3D; 1&#x2F;1000$</p>
+<p>每当基数10右上角的数字（指数）减一，数字就变为了原先的十分之一。因此，$10^0$就是1。</p>
+<p>&ensp;&ensp;&ensp;&ensp;不难看出在指数法则中，数字0起到了统一标准、简化规则的作用。借助数字0，能够将按位计数法中的各个数位统一表示成$10^n$。否则，就必须对数字1进行特殊化处理。而十进制的按位计数法表示的数字也可以用如下所示的表达式来表示：</p>
+<p>$$a_n*10^n + a_{n - 1}<em>10^{n-1} + \dots + a_0</em>10^0$$</p>
+<p>这样，通过0来明示“没有”，就使规则简单化了，形成了一种“模式”。</p>
+<h2 id="数字0作为一个占位符在编程实践中的应用"><a href="#数字0作为一个占位符在编程实践中的应用" class="headerlink" title="数字0作为一个占位符在编程实践中的应用"></a>数字0作为一个占位符在编程实践中的应用</h2><p>&ensp;&ensp;&ensp;&ensp;计算机被发明的早期通常被用于数值计算。对于一个十进制整数不同数位上的数字，我们可以令其对10循环取余，并将取余的结果保存在一个数组中。例如，数字2503，可以转化成数组<code>nums = [3,0,5,2]</code>。此时我们可以看到对数组<code>nums</code>执行循环遍历时，使用加法器将$nums[i]*10^i$累加在一起，又重新变回了数字2503。换句话说，正是因为数字0作为占位符的存在，使得整数可以完成向量化，从一维数据变成了多维数组，进而我们可以对其做一些更复杂的操作。</p>
+<p>&ensp;&ensp;&ensp;&ensp;占位符对于计算机专业的新手来说是一个很重要的概念，在变量声明、参数传递方面扮演着重要作用。正如《程序员的数学》一书中所写的那样——有了占位符才会产生模式，有了模式才会产生简单的规则。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%AE%97%E6%B3%95/" rel="tag"># 算法</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/05/06/%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F-Lomuto%E6%B3%95%E4%B8%8EHoare%E6%B3%95/" rel="prev" title="快速排序-Lomuto法与Hoare法">
+                  <i class="fa fa-angle-left"></i> 快速排序-Lomuto法与Hoare法
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Kaiyuan Zhang</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
