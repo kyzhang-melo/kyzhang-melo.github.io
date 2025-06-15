@@ -131,12 +131,12 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-count">5</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-count">2</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -153,6 +153,95 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2025/06/15/RAG%E5%AE%9E%E8%B7%B5%E7%AC%94%E8%AE%B0%EF%BC%88%E4%B8%80%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Kaiyuan Zhang">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Melo's Blog">
+      <meta itemprop="description" content="欢迎来到我的博客">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Melo's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/06/15/RAG%E5%AE%9E%E8%B7%B5%E7%AC%94%E8%AE%B0%EF%BC%88%E4%B8%80%EF%BC%89/" class="post-title-link" itemprop="url">RAG实践笔记（一）</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-06-15 19:43:03 / 修改时间：21:51:22" itemprop="dateCreated datePublished" datetime="2025-06-15T19:43:03+08:00">2025-06-15</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h1 id="RAG实践笔记（一）"><a href="#RAG实践笔记（一）" class="headerlink" title="RAG实践笔记（一）"></a>RAG实践笔记（一）</h1><p>本文用于记录本人实践Github项目《All RAG Techniques: A Simpler, Hands-On Approach》（url: <a target="_blank" rel="noopener" href="https://github.com/FareedKhan-dev/all-rag-techniques%EF%BC%89%E6%9C%9F%E9%97%B4%E7%9A%84%E6%89%80%E5%BE%97%E6%89%80%E6%83%B3%E3%80%82">https://github.com/FareedKhan-dev/all-rag-techniques）期间的所得所想。</a></p>
+<p>首先，我想理清楚一下RAG（Retrieval Augmented Generation）和LLM Agent之间的关系。结合Anthropic的博文《Building effective agents》来看，Agent和Workflow之间是有区别的，其关键的不同之处在于整个系统在多大程度上允许LLM模型“自由发挥”。RAG系统对LLM Agent的帮助是很大的。因为扮演Agent“大脑”角色的LLM模型，其掌握的知识停留在训练数据的时间之前。而以LLM模型训练的耗时和成本来看，使用实时数据训练是不太划算的（这一点和使用超级计算机做天气预报类似，预报的速度赶不上气候实时变化的速度）。在此背景下，LLM Agent应运而生。Agent能够使用各种工具（例如，Search tool）来弥补LLM模型在实时数据缺失方面的不足。而RAG系统则能够扮演知识库的角色，使LLM Agent成为某一特定领域的问答专家，提升知识查询的准确率和正确性。回到Github项目《All RAG Techniques》来看，作者在前期搭建的notebook更类似于Workflow的概念，即借助LLM模型提升RAG系统的性能表现（提升查询准确率、对查询结果进行ReRank等）。而随着notebook的更新，LLM模型获得了更多地自主行动权，逐步向Agent的方向发展。</p>
+<h2 id="最基本的RAG原型系统"><a href="#最基本的RAG原型系统" class="headerlink" title="最基本的RAG原型系统"></a>最基本的RAG原型系统</h2><p>最基本的RAG原型系统的工作管道如下：</p>
+<ol>
+<li><p>加载和预处理文本数据；</p>
+</li>
+<li><p>将文本数据分块以提升检索性能；</p>
+</li>
+<li><p>使用嵌入模型（embedding mode）将文本数据块转换为向量形式；</p>
+</li>
+<li><p>根据用户查询检索相关的文本数据块；</p>
+</li>
+<li><p>使用对话&#x2F;推理模型根据检索到的文本生成响应。</p>
+</li>
+</ol>
+<p>结合上述工作管道可以看出，LLM模型至少参与了文本数据向量化表示和生成响应两个步骤。此时的RAG原型系统还不能称之为Agent，仅仅只能称得上是Workflow。在此阶段，对RAG系统的优化主要在语义分块、分块size选择、上下文感知增强检索。无论是语义分块算法、分块size的决策、还是上下文感知算法，均由工程师负责编写，LLM模型在此过程中仅扮演文本数据向量化嵌入和根据查询生成响应的角色。接下来，LLM模型的戏份将会逐步增加，而RAG系统也变得更加“智能化”。</p>
+<h2 id="LLM模型增强RAG系统"><a href="#LLM模型增强RAG系统" class="headerlink" title="LLM模型增强RAG系统"></a>LLM模型增强RAG系统</h2><p>从第5个notebook《Contextual Chunk Headers (CCH) in Simple RAG》开始，LLM模型逐步开始承担更多地任务。例如：生成文本摘要、为文本数据块生成相关的问题、对用户的查询进行转换、对查询结果进行ReRank、识别文本数据块之间的关联关系等。</p>
+<p>相信在具体的工程项目实践当中，LLM模型扮演的上述角色能够为RAG based Agent增添不少光彩。尤其是在查询转换方面，有些时候用户无法使用精准的语言表述自己的查询需求，此时LLM推理模型可对用户查询执行详细重写、广泛检索或子查询分解，对交互体验的提升是巨大的。考虑到在传统搜索引擎的时代，由于服务提供方不具备LLM大语言模型提供的此项能力，于是改为使用关键词模糊匹配进行查询、检索、推荐，不得不感叹人类始终是更智慧的一方。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>该项目的亮点在于全程未使用任何Agent框架和向量数据库。仅通过API的方式调用LLM模型，使用提示词工程向LLM模型交代任务。在文本向量存储方面，该项目使用numpy手写了一个SimpleVectorStore类，该类可被视作各种向量数据库的原型。</p>
+<p>无论是在校学生还是已参加工作的工程师，均可从该项目中系统地学到搭建RAG based Agent所需的相关技术。</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
