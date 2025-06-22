@@ -131,12 +131,12 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">5</span>
+          <span class="site-state-item-count">6</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-count">3</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -153,6 +153,82 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2025/06/22/RAG%E5%AE%9E%E8%B7%B5%E7%AC%94%E8%AE%B0%EF%BC%88%E4%BA%8C%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Kaiyuan Zhang">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Melo's Blog">
+      <meta itemprop="description" content="欢迎来到我的博客">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Melo's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/06/22/RAG%E5%AE%9E%E8%B7%B5%E7%AC%94%E8%AE%B0%EF%BC%88%E4%BA%8C%EF%BC%89/" class="post-title-link" itemprop="url">RAG实践笔记（二）</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-06-22 20:15:48 / 修改时间：20:55:15" itemprop="dateCreated datePublished" datetime="2025-06-22T20:15:48+08:00">2025-06-22</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h1 id="RAG实践笔记（二）"><a href="#RAG实践笔记（二）" class="headerlink" title="RAG实践笔记（二）"></a>RAG实践笔记（二）</h1><p>本周主要实践了《All RAG Techniques》中的如下教程：1）带有反馈循环机制的RAG系统；2）Adaptive RAG；3）Graph RAG。现将实践中遇到的一些问题汇总如下。</p>
+<h3 id="提示词需要跟随LLM模型的变化而改变"><a href="#提示词需要跟随LLM模型的变化而改变" class="headerlink" title="提示词需要跟随LLM模型的变化而改变"></a>提示词需要跟随LLM模型的变化而改变</h3><p>由于Github教程《All RAG Techniques》中使用的LLM模型平台是 nebius ，原作者通过该平台申请了OpenAI的API Key。而本人在实践当中使用的是智谱系列的LLM及API Key。于是在Graph RAG的实践过程中出现了差距非常大的实验结果。Graph RAG主要使用LLM模型对切块后的文本数据进行语义概念提取，并从文本中识别5-10个核心概念。在此基础之上构建知识图谱。原教程使用”meta-llama&#x2F;Llama-3.2-3B-Instruct”模型，对42个文本切块构建了110条边。而本人使用智谱系列的LLM模型，对42个文本切块仅构建出了10-20条边。</p>
+<p>针对该问题，目前猜测原因是提示词不匹配的问题。因为即便是使用参数规模更大的智谱LLM模型，也无法构建出更多的边。而考虑到文本和提示词均为英文，极有可能遇到了提示词与模型不匹配的问题。</p>
+<p>考虑的解决方案有二：一、更改提示词，查看更改后的效果；二、使用Hugging Face的API Key使用”meta-llama&#x2F;Llama-3.2-3B-Instruct”模型，查看知识图谱的构建效果。</p>
+<h3 id="扮演router角色的LLM模型可能做出一些与预期不相符的路由决策"><a href="#扮演router角色的LLM模型可能做出一些与预期不相符的路由决策" class="headerlink" title="扮演router角色的LLM模型可能做出一些与预期不相符的路由决策"></a>扮演router角色的LLM模型可能做出一些与预期不相符的路由决策</h3><p>在Adaptive RAG系统中，由LLM模型扮演智能决策中枢的角色（即《Build Effective Agent》博文中所说的Router），负责对查询进行分析并作出分类决策。教程中共构建了四种“查询-响应策略”：1）事实性查询；2）分析性查询；3）“观点多样性”查询；4）用户上下文集成查询（个性化查询）。</p>
+<p>但是在实践当中，由于LLM模型的不同，其对于相同查询的分类会发生变化。例如，对于”How do AI ethics and governance frameworks address potential societal impacts?”这一查询，”meta-llama&#x2F;Llama-3.2-3B-Instruct”模型将其路由到了分析性查询策略；而智谱的“glm-z1-flash”模型则将其路由到了事实性查询策略。</p>
+<p>考虑到商业项目是需要一定的确定性的，那么Adaptive RAG系统的前景真的有描绘的那么美好吗？倘若用户对查询的期望是“事实性回答”，而LLM模型将用户的查询路由至“观点多样性策略”，那么用户对本次查询的结果大概是不满意的。</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
