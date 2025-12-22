@@ -131,12 +131,12 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">7</span>
+          <span class="site-state-item-count">8</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-count">5</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -153,6 +153,95 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2025/12/22/%E4%BD%BF%E7%94%A8huggingface%E9%95%9C%E5%83%8F%E7%AB%99%E6%97%B6%E9%81%87%E5%88%B0%E7%9A%84%E4%B8%80%E4%B8%AA%E5%B0%8F%E5%9D%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Kaiyuan Zhang">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Melo's Blog">
+      <meta itemprop="description" content="欢迎来到我的博客">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Melo's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2025/12/22/%E4%BD%BF%E7%94%A8huggingface%E9%95%9C%E5%83%8F%E7%AB%99%E6%97%B6%E9%81%87%E5%88%B0%E7%9A%84%E4%B8%80%E4%B8%AA%E5%B0%8F%E5%9D%91/" class="post-title-link" itemprop="url">使用huggingface镜像站时遇到的一个小坑</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-12-22 21:19:28 / 修改时间：21:29:20" itemprop="dateCreated datePublished" datetime="2025-12-22T21:19:28+08:00">2025-12-22</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h1 id="使用-huggingface-镜像站时遇到的一个小坑"><a href="#使用-huggingface-镜像站时遇到的一个小坑" class="headerlink" title="使用 huggingface 镜像站时遇到的一个小坑"></a>使用 huggingface 镜像站时遇到的一个小坑</h1><h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>最近在使用 HuggingFace 镜像站加速模型与数据集下载时，遇到了一个比较隐蔽的问题。场景是：系统环境里已经配置了镜像站地址（例如替换 <code>huggingface.co</code> 为国内镜像<code>hf-mirror.com</code>），然后使用 <code>lm-eval</code> 工具进行模型评估。</p>
+<p><code>lm-eval</code> 的工作流程是：根据参数自动从 HuggingFace Hub 拉取数据集，并执行评估任务。如果数据集是常规的直接下载文件，一切正常。但如果数据集是通过 <strong>自定义脚本文件</strong> 加载的，就会出现问题。</p>
+<h2 id="问题现象"><a href="#问题现象" class="headerlink" title="问题现象"></a>问题现象</h2><p>在命令行执行评估时，日志会报错：</p>
+<p>代码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">FileNotFoundError: [Errno 2] No such file or directory: &#x27;...&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>具体表现是：<code>lm-eval</code> 尝试加载数据集脚本，但脚本内部仍然指向原始的 <code>huggingface.co</code> 地址。由于环境配置了镜像站，框架无法正确解析这个路径，导致报错“找不到文件”。</p>
+<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><p>经过排查，总结出两种解决方式：</p>
+<ol>
+<li><strong>手动下载数据集</strong>   直接用 <code>huggingface-cli</code> 或者浏览器访问镜像站，下载数据集文件到本地，然后在 <code>lm-eval</code> 的配置里指定本地路径。</li>
+<li><strong>修改缓存目录中的脚本文件</strong><ul>
+<li>找到缓存目录（通常在 <code>~/.cache/huggingface/datasets</code> 或者你自定义的 <code>HF_HOME</code> 路径下）。</li>
+<li>打开对应数据集的加载脚本文件。</li>
+<li>将脚本中硬编码的 <code>https://huggingface.co/...</code> 地址替换为镜像站地址。</li>
+<li>保存后再次运行 <code>lm-eval</code>，即可正常加载。</li>
+</ul>
+</li>
+</ol>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这个坑的本质是：<strong>镜像站配置只影响框架的下载逻辑，但不会自动替换数据集脚本里的硬编码地址</strong>。因此在使用 <code>lm-eval</code> 这类工具时，如果遇到“找不到文件”的报错，需要检查是否涉及自定义脚本加载，并手动修正脚本或提前下载数据集。</p>
+<p>这次经历的坑提醒我：在使用镜像站时，除了全局配置，还要注意工具内部的实现细节。尤其是涉及到脚本化加载的场景，可能需要额外的人工干预。</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
