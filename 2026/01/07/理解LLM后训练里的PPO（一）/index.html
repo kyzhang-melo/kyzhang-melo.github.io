@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.23.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="理解LLM后训练里的PPO（一）在大模型（LLM）后训练（post-training）的语境下，PPO（Proximal Policy Optimization）几乎已经成为事实标准：无论是 RLHF、RLAIF，还是近两年出现的 Agentic RL（如 Search-R1、GRPO），我们都会看到 PPO 或其变体的身影。 然而，一个经常被忽略的问题是：**PPO 在 LLM 后训练中究竟“解">
+<meta property="og:type" content="article">
+<meta property="og:title" content="理解LLM后训练里的PPO（一）">
+<meta property="og:url" content="http://example.com/2026/01/07/%E7%90%86%E8%A7%A3LLM%E5%90%8E%E8%AE%AD%E7%BB%83%E9%87%8C%E7%9A%84PPO%EF%BC%88%E4%B8%80%EF%BC%89/index.html">
+<meta property="og:site_name" content="Melo&#39;s Blog">
+<meta property="og:description" content="理解LLM后训练里的PPO（一）在大模型（LLM）后训练（post-training）的语境下，PPO（Proximal Policy Optimization）几乎已经成为事实标准：无论是 RLHF、RLAIF，还是近两年出现的 Agentic RL（如 Search-R1、GRPO），我们都会看到 PPO 或其变体的身影。 然而，一个经常被忽略的问题是：**PPO 在 LLM 后训练中究竟“解">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-01-07T15:06:06.000Z">
+<meta property="article:modified_time" content="2026-01-07T15:13:37.175Z">
+<meta property="article:author" content="Kaiyuan Zhang">
+<meta property="article:tag" content="LLM后训练">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://example.com/2026/01/07/%E7%90%86%E8%A7%A3LLM%E5%90%8E%E8%AE%AD%E7%BB%83%E9%87%8C%E7%9A%84PPO%EF%BC%88%E4%B8%80%EF%BC%89/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://example.com/2026/01/07/%E7%90%86%E8%A7%A3LLM%E5%90%8E%E8%AE%AD%E7%BB%83%E9%87%8C%E7%9A%84PPO%EF%BC%88%E4%B8%80%EF%BC%89/","path":"2026/01/07/理解LLM后训练里的PPO（一）/","title":"理解LLM后训练里的PPO（一）"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>理解LLM后训练里的PPO（一） | Melo's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Melo's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">Life is short, make it more wonderful!</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%90%86%E8%A7%A3LLM%E5%90%8E%E8%AE%AD%E7%BB%83%E9%87%8C%E7%9A%84PPO%EF%BC%88%E4%B8%80%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">理解LLM后训练里的PPO（一）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E4%BB%8E-TRPO-%E5%88%B0-PPO%EF%BC%9A%E7%BA%A6%E6%9D%9F%E6%98%AF%E5%A6%82%E4%BD%95%E8%A2%AB%E2%80%9C%E4%BB%A3%E7%90%86%E2%80%9D%E7%9A%84"><span class="nav-number">1.1.</span> <span class="nav-text">一、从 TRPO 到 PPO：约束是如何被“代理”的</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81LLM-%E9%87%8C%E7%9A%84%E2%80%9C%E7%AD%96%E7%95%A5%E2%80%9D%EF%BC%8C%E5%B7%B2%E7%BB%8F%E4%B8%8D%E6%98%AF%E5%8D%95-timestep-%E7%9A%84%E5%8A%A8%E4%BD%9C"><span class="nav-number">1.2.</span> <span class="nav-text">二、LLM 里的“策略”，已经不是单 timestep 的动作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81Ratio%EF%BC%9A%E4%B8%80%E6%AC%A1-change-of-measure"><span class="nav-number">1.3.</span> <span class="nav-text">三、Ratio：一次 change of measure</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81Clip%EF%BC%9A%E4%B8%80%E4%B8%AA%E5%AF%B9%E7%AD%96%E7%95%A5%E6%94%B9%E8%BF%9B%E7%9A%84%E4%BF%9D%E5%AE%88%E4%B8%8B%E7%95%8C"><span class="nav-number">1.4.</span> <span class="nav-text">四、Clip：一个对策略改进的保守下界</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81Reward-%E5%B9%B6%E4%B8%8D%E6%98%AF%E4%B8%BB%E8%A7%92"><span class="nav-number">1.5.</span> <span class="nav-text">五、Reward 并不是主角</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E5%B0%8F%E7%BB%93%EF%BC%9APPO-%E5%9C%A8-LLM-%E5%90%8E%E8%AE%AD%E7%BB%83%E4%B8%AD%E5%88%B0%E5%BA%95%E5%81%9A%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">1.6.</span> <span class="nav-text">六、小结：PPO 在 LLM 后训练中到底做了什么？</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Kaiyuan Zhang</p>
+  <div class="site-description" itemprop="description">欢迎来到我的博客</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2026/01/07/%E7%90%86%E8%A7%A3LLM%E5%90%8E%E8%AE%AD%E7%BB%83%E9%87%8C%E7%9A%84PPO%EF%BC%88%E4%B8%80%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Kaiyuan Zhang">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Melo's Blog">
+      <meta itemprop="description" content="欢迎来到我的博客">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="理解LLM后训练里的PPO（一） | Melo's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          理解LLM后训练里的PPO（一）
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-01-07 23:06:06 / 修改时间：23:13:37" itemprop="dateCreated datePublished" datetime="2026-01-07T23:06:06+08:00">2026-01-07</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="理解LLM后训练里的PPO（一）"><a href="#理解LLM后训练里的PPO（一）" class="headerlink" title="理解LLM后训练里的PPO（一）"></a>理解LLM后训练里的PPO（一）</h1><p>在大模型（LLM）后训练（post-training）的语境下，PPO（Proximal Policy Optimization）几乎已经成为事实标准：无论是 RLHF、RLAIF，还是近两年出现的 Agentic RL（如 Search-R1、GRPO），我们都会看到 PPO 或其变体的身影。</p>
+<p>然而，一个经常被忽略的问题是：**PPO 在 LLM 后训练中究竟“解决的是什么问题”？**它真的在“教模型变得更聪明”吗？还是在更底层的层面上，承担着一种“分布控制机制”的角色？</p>
+<p>本文尝试从 <strong>优化视角 + 概率分布视角</strong> 出发，重新理解 PPO 在 LLM 后训练中的真正作用。</p>
+<hr>
+<h2 id="一、从-TRPO-到-PPO：约束是如何被“代理”的"><a href="#一、从-TRPO-到-PPO：约束是如何被“代理”的" class="headerlink" title="一、从 TRPO 到 PPO：约束是如何被“代理”的"></a>一、从 TRPO 到 PPO：约束是如何被“代理”的</h2><p>从算法史来看，PPO 并不是凭空出现的，它直接继承自 TRPO（Trust Region Policy Optimization）。TRPO 的核心思想非常清晰：**每一步策略更新，都必须限制在一个“可信任区域”之内。**数学上，这个“可信任区域”通常通过 <strong>KL divergence 约束</strong> 来表达。但问题在于：</p>
+<ul>
+<li>这是一个 <strong>带约束的优化问题</strong></li>
+<li>在 <strong>高维神经网络参数空间</strong> 中，直接求解代价极高</li>
+<li>实现复杂、数值稳定性差</li>
+</ul>
+<p>PPO 做了一件非常“工程化”、但极其重要的事情：<strong>把一个难以直接求解的约束优化问题，转换为一个一阶可优化的无约束目标函数。</strong></p>
+<p>这类操作在运筹优化与理论计算机科学中非常常见：将不可微 &#x2F; 离散 &#x2F; 非凸的结构，转换为连续、可微、可控的形式，从而“让梯度能够工作”。PPO 的 clip 机制，正是这一思想的体现。</p>
+<hr>
+<h2 id="二、LLM-里的“策略”，已经不是单-timestep-的动作"><a href="#二、LLM-里的“策略”，已经不是单-timestep-的动作" class="headerlink" title="二、LLM 里的“策略”，已经不是单 timestep 的动作"></a>二、LLM 里的“策略”，已经不是单 timestep 的动作</h2><p>在经典强化学习中，策略 $\pi(a_t \mid s_t)$ 描述的是：在状态 $s_t$ 下，选择一个动作 $a_t$ 的概率。但在 LLM 后训练中，这个定义发生了<strong>本质变化</strong>。</p>
+<ul>
+<li>action 不再是一个离散动作，而是 <strong>一个 token 接一个 token 的生成过程</strong></li>
+<li>策略 $\pi_\theta$ 实际上定义在 <strong>token-sequence 空间上的概率分布</strong></li>
+</ul>
+<p>换句话说：<strong>一次“策略更新”，不再是微调某个动作偏好，而是在整体上调整“生成分布的形状”。</strong></p>
+<p>这正是为什么 LLM 的 RL 训练会极其不稳定：训练过程中改变的不是一个动作，而是一整个分布。</p>
+<hr>
+<h2 id="三、Ratio：一次-change-of-measure"><a href="#三、Ratio：一次-change-of-measure" class="headerlink" title="三、Ratio：一次 change of measure"></a>三、Ratio：一次 change of measure</h2><p>PPO 中最核心的量之一是：<br>$$<br>r_t &#x3D; \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\theta_{\text{old}}}(a_t \mid s_t)}<br>$$<br>在 LLM 语境下，它可以被理解为：<strong>新模型对这段 token-sequence 的概率，与旧模型对同一 sequence 的概率之比。</strong></p>
+<p>这个 ratio 有几个非常关键的性质：</p>
+<ol>
+<li><strong>它是无量纲的标量（scalar）</strong></li>
+<li>它不关心 reward 的绝对值，只关心“变化幅度”</li>
+<li>从概率论角度看，它本质上是一种<strong>change of measure（测度变换）</strong></li>
+</ol>
+<p>换句话说，ratio 刻画的是：<strong>策略分布从 $\pi_{\theta_{\text{old}}}$ 到 $\pi_\theta$ 的局部变化程度。</strong></p>
+<p>这也解释了一个经常被误解的问题：PPO 并不是在“最大化 reward 本身”，而是在 <strong>控制分布更新的尺度</strong>。</p>
+<hr>
+<h2 id="四、Clip：一个对策略改进的保守下界"><a href="#四、Clip：一个对策略改进的保守下界" class="headerlink" title="四、Clip：一个对策略改进的保守下界"></a>四、Clip：一个对策略改进的保守下界</h2><p>真正让 PPO 成为工业标准的，不是 ratio，而是 <strong>clip</strong>。clip 的形式通常是：<br>$$<br>\min \left(<br>r_t A_t,;<br>\text{clip}(r_t, 1-\epsilon, 1+\epsilon) A_t<br>\right)<br>$$<br>这一步有几个非常重要的含义：</p>
+<ul>
+<li>它在目标函数层面 <strong>隐式地实现了 TRPO 的“更新幅度约束”</strong></li>
+<li>它是可微的，因此可以直接用一阶优化</li>
+<li>它通过 <code>min()</code> 构造了一个<strong>对真实策略改进的保守下界（pessimistic lower bound）</strong></li>
+</ul>
+<p>从直觉上讲：如果某次更新“太激进”，PPO 会选择“假装你没有获得那么多好处”。这也是为什么 PPO <strong>宁愿慢一点，也不允许策略分布发生剧烈跳变</strong>。</p>
+<p>值得注意的是，这种“控制框架”已经成为 LLM RL 的事实范式，无论是PPO，GRPO，亦或是各种 clipped surrogate objectives，它们的核心精神是一致的。</p>
+<hr>
+<h2 id="五、Reward-并不是主角"><a href="#五、Reward-并不是主角" class="headerlink" title="五、Reward 并不是主角"></a>五、Reward 并不是主角</h2><p>在很多初学者的理解中，RLHF ≈ 奖励建模 + PPO。但从 PPO 的数学结构来看，reward 并不是最核心的部分：</p>
+<ul>
+<li>reward 只是被 <strong>attach 到 trajectory 上的一个信号</strong></li>
+<li>它通常集中在 <strong>sequence 的最后一个 token</strong></li>
+<li>真正决定更新形态的，是<strong>ratio × advantage × clip</strong></li>
+</ul>
+<p>因此可以说：<strong>PPO 在 LLM 后训练中的主要作用，不是提升生成能力本身，<br> 而是提供一个“可控、可优化的分布更新机制”。</strong></p>
+<hr>
+<h2 id="六、小结：PPO-在-LLM-后训练中到底做了什么？"><a href="#六、小结：PPO-在-LLM-后训练中到底做了什么？" class="headerlink" title="六、小结：PPO 在 LLM 后训练中到底做了什么？"></a>六、小结：PPO 在 LLM 后训练中到底做了什么？</h2><p>如果用一句话总结：<strong>PPO 并不负责“教模型学什么”，它负责“限制模型学得有多猛”。<strong>它通过 surrogate objective 与 clip 机制，将不可控的策略分布更新转换为一个稳定、连续、可优化的过程，使模型能够在遵循人类偏好或任务奖励的同时</strong>避免分布塌缩与训练崩溃</strong>。在LLM时代，PPO 也许不是最“优雅”的算法，却是最可靠的算法。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/LLM%E5%90%8E%E8%AE%AD%E7%BB%83/" rel="tag"># LLM后训练</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/12/22/%E4%BD%BF%E7%94%A8huggingface%E9%95%9C%E5%83%8F%E7%AB%99%E6%97%B6%E9%81%87%E5%88%B0%E7%9A%84%E4%B8%80%E4%B8%AA%E5%B0%8F%E5%9D%91/" rel="prev" title="使用huggingface镜像站时遇到的一个小坑">
+                  <i class="fa fa-angle-left"></i> 使用huggingface镜像站时遇到的一个小坑
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Kaiyuan Zhang</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
