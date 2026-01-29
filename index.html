@@ -131,12 +131,12 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-count">10</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-count">7</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
@@ -153,6 +153,220 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2026/01/29/%E7%BB%93%E5%90%88-Karpathy-%E5%BC%80%E6%BA%90%E7%9A%84-Llama2-c-%E9%A1%B9%E7%9B%AE%E5%A4%8D%E7%9B%98LLM%E6%A8%A1%E5%9E%8B%E6%9E%B6%E6%9E%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Kaiyuan Zhang">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Melo's Blog">
+      <meta itemprop="description" content="欢迎来到我的博客">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Melo's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2026/01/29/%E7%BB%93%E5%90%88-Karpathy-%E5%BC%80%E6%BA%90%E7%9A%84-Llama2-c-%E9%A1%B9%E7%9B%AE%E5%A4%8D%E7%9B%98LLM%E6%A8%A1%E5%9E%8B%E6%9E%B6%E6%9E%84/" class="post-title-link" itemprop="url">结合 Karpathy 开源的 Llama2.c 项目复盘LLM模型架构</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-01-29 09:33:33 / 修改时间：09:52:17" itemprop="dateCreated datePublished" datetime="2026-01-29T09:33:33+08:00">2026-01-29</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h1 id="结合-Karpathy-开源的-Llama2-c-项目复盘LLM模型架构"><a href="#结合-Karpathy-开源的-Llama2-c-项目复盘LLM模型架构" class="headerlink" title="结合 Karpathy 开源的 Llama2.c 项目复盘LLM模型架构"></a>结合 Karpathy 开源的 Llama2.c 项目复盘LLM模型架构</h1><p>Karpathy 开源的 Llama2.c 项目是揭秘 LLM 模型架构组成及推理优化技术的窗口。本文以一次“把 HF 模型导出为 llama2.c 可读的 <code>.bin</code>”为线索，用 Debug 的方式复盘了 LLM 模型的架构组成。</p>
+<hr>
+<h2 id="为什么要-Debug-export-py？"><a href="#为什么要-Debug-export-py？" class="headerlink" title="为什么要 Debug export.py？"></a>为什么要 Debug <code>export.py</code>？</h2><p>Karpathy 的 <strong>llama2.c</strong> 项目目标很明确：用尽可能少的依赖，在 C 里跑一个 LLaMA2 推理。要做到这一点，最先解决的问题不是推理，而是<strong>权重格式</strong>——C 程序并不能理解 HuggingFace 的各种 checkpoint 组织方式，它更希望拿到一个“按固定顺序排列的二进制文件”，读完就能把指针指到对应权重上。</p>
+<p>因此 <code>export.py</code> 的角色是：<br> <strong>把符合 LLaMA2 架构的 HF 模型 → 导出为一个布局固定的 <code>.bin</code> 文件</strong>。</p>
+<p>本次选择的导出对象是：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://huggingface.co/flyingfishinwater/chinese-baby-llama2</span><br></pre></td></tr></table></figure>
+
+<p>该模型的关键配置如下（Debug 时需确认一致）：</p>
+<ul>
+<li><code>dim=768</code></li>
+<li><code>n_layers=12</code></li>
+<li><code>n_heads=12</code></li>
+<li><code>n_kv_heads=12</code></li>
+<li><code>hidden_dim=2268</code></li>
+<li><code>vocab_size=32000</code></li>
+<li><code>max_seq_len=1024</code></li>
+<li><code>shared_classifier=True</code>（embedding 与 output 权重共享）</li>
+</ul>
+<hr>
+<h2 id="Debug-的方法：用-out-file-tell-shape-numel-验证二进制协议"><a href="#Debug-的方法：用-out-file-tell-shape-numel-验证二进制协议" class="headerlink" title="Debug 的方法：用 out_file.tell() + shape/numel 验证二进制协议"></a>Debug 的方法：用 <code>out_file.tell()</code> + <code>shape/numel</code> 验证二进制协议</h2><p>在 <code>legacy_export()</code> 里，每写完一段内容，文件大小都会增长。可以用两件事来验证：</p>
+<ol>
+<li><strong>out_file.tell()</strong>：当前写入位置（单位是 <strong>bytes</strong>，不是 bits）</li>
+<li>每段权重的 <strong>shape → numel() → 增量 bytes</strong>；<code>增量(bytes) = numel * 4</code>（因为 <code>serialize_fp32()</code> 会把张量转成 fp32 再写出）</li>
+</ol>
+<blockquote>
+<p>即使模型权重在内存里是 fp16&#x2F;bf16（2 bytes），<code>legacy_export</code> 仍会 <code>to(float32)</code>，所以落盘一定按 4 bytes&#x2F;元素计算。</p>
+</blockquote>
+<hr>
+<h2 id="Step-1：Header（7-个-int32）"><a href="#Step-1：Header（7-个-int32）" class="headerlink" title="Step 1：Header（7 个 int32）"></a>Step 1：Header（7 个 int32）</h2><p><code>legacy_export()</code> 的起点是写入 header（7 个 int32）。<br> 我们在写完 header 后验证：</p>
+<ul>
+<li>7 个值分别是：<code>768, 2268, 12, 12, 12, 32000, 1024</code></li>
+<li><code>out_file.tell() == 28</code>（&#x3D; 7 * 4 bytes）</li>
+</ul>
+<p>这一步的意义：</p>
+<ul>
+<li><code>.bin</code> 文件在字节层面声明了“我是谁”（模型结构参数）</li>
+<li>C 端 loader 只要先读这 28 bytes，就能知道后面要读多少层、每层矩阵多大、RoPE 表多长</li>
+</ul>
+<hr>
+<h2 id="Step-2：Embedding（tok-embeddings）"><a href="#Step-2：Embedding（tok-embeddings）" class="headerlink" title="Step 2：Embedding（tok_embeddings）"></a>Step 2：Embedding（tok_embeddings）</h2><p>紧接着写 <code>tok_embeddings.weight</code>，其 shape 为 <code>(32000, 768)</code>：</p>
+<ul>
+<li><code>numel = 32000 * 768 = 24,576,000</code></li>
+<li>写入增量 &#x3D; <code>24,576,000 * 4 = 98,304,000 bytes</code></li>
+<li>写完后 <code>out_file.tell() = 28 + 98,304,000 = 98,304,028</code></li>
+</ul>
+<p>这一步把“vocab_size 和 dim”变成了一个真实的大矩阵：<br> <strong>词表行数 &#x3D; 32000；每个 token 的 embedding 向量长度 &#x3D; 768</strong>。</p>
+<hr>
+<h2 id="Step-3：逐块写入各层权重（关键：不是“逐层”，而是“逐权重块”）"><a href="#Step-3：逐块写入各层权重（关键：不是“逐层”，而是“逐权重块”）" class="headerlink" title="Step 3：逐块写入各层权重（关键：不是“逐层”，而是“逐权重块”）"></a>Step 3：逐块写入各层权重（关键：不是“逐层”，而是“逐权重块”）</h2><p>值得注意的是，导出顺序是：<strong>先写完所有层的 attention_norm，再写完所有层的 wq，再写 wk…</strong></p>
+<p>因此 Debug 的正确姿势是：每个块只验证一两次（第 0 层），确认单次增量，然后用 Continue 让它跑完 12 层。</p>
+<p>下面按 Debug 中走过的顺序复盘每个组件的“shape 与增量”。</p>
+<hr>
+<h2 id="attention-norm（12-次，每层一个向量）"><a href="#attention-norm（12-次，每层一个向量）" class="headerlink" title="attention_norm（12 次，每层一个向量）"></a>attention_norm（12 次，每层一个向量）</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">layer.attention_norm.weight.shape = ([768])</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>单层增量：<code>768 * 4 = 3,072</code></li>
+<li>12 层总增量：<code>3,072 * 12 = 36,864</code></li>
+</ul>
+<p>在 Debug 中看到每次 F10 写完，<code>tell()</code> 增加 3072，这就等价于“又写完一层 norm”。</p>
+<hr>
+<h2 id="attention-wq-wk-wv-wo（12-次，每层一个-768×768）"><a href="#attention-wq-wk-wv-wo（12-次，每层一个-768×768）" class="headerlink" title="attention.wq &#x2F; wk &#x2F; wv &#x2F; wo（12 次，每层一个 768×768）"></a>attention.wq &#x2F; wk &#x2F; wv &#x2F; wo（12 次，每层一个 768×768）</h2><p>每个权重矩阵的 shape 都是 <code>(768, 768)</code>：</p>
+<ul>
+<li>单层 <code>numel = 768*768 = 589,824</code></li>
+<li>单层增量：<code>589,824*4 = 2,359,296</code></li>
+<li>12 层总增量：<code>2,359,296*12 = 28,311,552</code></li>
+</ul>
+<p>四个矩阵（Q&#x2F;K&#x2F;V&#x2F;O）合计：<br> <code>28,311,552 * 4 = 113,246,208 bytes</code></p>
+<p>这一步非常直观地把 Transformer 的注意力层拆成了传统线代：<br> <strong>四个线性层矩阵</strong>决定了 Q&#x2F;K&#x2F;V 的投影和输出投影。</p>
+<hr>
+<h2 id="ffn-norm（12-次，每层一个向量）"><a href="#ffn-norm（12-次，每层一个向量）" class="headerlink" title="ffn_norm（12 次，每层一个向量）"></a>ffn_norm（12 次，每层一个向量）</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">layer.ffn_norm.weight.shape = ([768])</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>单层：<code>3,072</code></li>
+<li>12 层：<code>36,864</code></li>
+</ul>
+<hr>
+<h2 id="FFN：feed-forward-w1-w2-w3"><a href="#FFN：feed-forward-w1-w2-w3" class="headerlink" title="FFN：feed_forward.w1 &#x2F; w2 &#x2F; w3"></a>FFN：feed_forward.w1 &#x2F; w2 &#x2F; w3</h2><p>在Debug过程中观察到 <code>w1.shape = (2268, 768)</code>，这就是 FFN 的中间维度 <code>hidden_dim=2268</code> 在落地。</p>
+<h3 id="w1-2268-768"><a href="#w1-2268-768" class="headerlink" title="w1: (2268, 768)"></a>w1: (2268, 768)</h3><ul>
+<li>单层 <code>numel = 2268*768 = 1,741,824</code></li>
+<li>单层增量：<code>1,741,824*4 = 6,967,296</code></li>
+<li>12 层总增量：<code>6,967,296*12 = 83,607,552</code></li>
+</ul>
+<h3 id="w2-通常是-768-2268"><a href="#w2-通常是-768-2268" class="headerlink" title="w2: 通常是 (768, 2268)"></a>w2: 通常是 (768, 2268)</h3><ul>
+<li>单层 <code>numel</code> 同样是 <code>768*2268 = 1,741,824</code></li>
+<li>12 层总增量同样是 <code>83,607,552</code></li>
+</ul>
+<h3 id="w3-通常也是-2268-768"><a href="#w3-通常也是-2268-768" class="headerlink" title="w3: 通常也是 (2268, 768)"></a>w3: 通常也是 (2268, 768)</h3><ul>
+<li>同 w1：<code>83,607,552</code></li>
+</ul>
+<p>FFN 三块合计：</p>
+<ul>
+<li><code>83,607,552 * 3 = 250,822,656 bytes</code></li>
+</ul>
+<p>这段 Debug 让人很“具象”地感受到：<br> <strong>在很多 LLM 里，FFN 的参数量和计算量往往比 attention 更大</strong>。</p>
+<hr>
+<h2 id="final-rmsnorm（只写一次）"><a href="#final-rmsnorm（只写一次）" class="headerlink" title="final rmsnorm（只写一次）"></a>final rmsnorm（只写一次）</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">model.norm.weight.shape = (768,)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>增量：<code>768*4 = 3,072</code></li>
+</ul>
+<p>它是“所有层结束后”的最终归一化，属于模型尾部的一次性参数。</p>
+<hr>
+<h2 id="RoPE：freqs-cos-freqs-sin（你观察到-shape-1024×32）"><a href="#RoPE：freqs-cos-freqs-sin（你观察到-shape-1024×32）" class="headerlink" title="RoPE：freqs_cos &#x2F; freqs_sin（你观察到 shape &#x3D; 1024×32）"></a>RoPE：freqs_cos &#x2F; freqs_sin（你观察到 shape &#x3D; 1024×32）</h2><p>该步骤可以观察到：</p>
+<ul>
+<li><code>model.freqs_cos[:p.max_seq_len].shape = (1024, 32)</code></li>
+<li><code>model.freqs_sin[:p.max_seq_len].shape = (1024, 32)</code></li>
+</ul>
+<p>为什么是 32？<br> 因为 <code>head_dim = dim/n_heads = 768/12 = 64</code>，RoPE 以“成对旋转维度”存表，通常是 <code>head_dim/2 = 32</code>。</p>
+<p>每张表的写入：</p>
+<ul>
+<li><code>numel = 1024*32 = 32,768</code></li>
+<li>增量：<code>32,768*4 = 131,072 bytes</code><br> 两张表合计：<code>262,144 bytes</code></li>
+</ul>
+<hr>
+<h2 id="final-classifier-weights：要不要写？"><a href="#final-classifier-weights：要不要写？" class="headerlink" title="final classifier weights：要不要写？"></a>final classifier weights：要不要写？</h2><p>代码里有：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">if not shared_classifier:</span><br><span class="line">    serialize_fp32(out_file, model.output.weight)</span><br></pre></td></tr></table></figure>
+
+<p> Debug 得到 <code>shared_classifier=True</code>，所以 <strong>不会写</strong> <code>output.weight</code>。<br> 这点非常关键，因为它会直接影响 <code>.bin</code> 的尾部布局与最终大小。</p>
+<hr>
+<h2 id="终局验收：tell-与文件大小一致"><a href="#终局验收：tell-与文件大小一致" class="headerlink" title="终局验收：tell() 与文件大小一致"></a>终局验收：tell() 与文件大小一致</h2><p>最后在 close 前：</p>
+<ul>
+<li><code>out_file.tell() = 462,711,836</code></li>
+</ul>
+<p>落盘后：</p>
+<ul>
+<li><code>ls -l</code> 显示 <code>.bin</code> 文件大小 <strong>也正好是 462,711,836 bytes</strong></li>
+</ul>
+<p>这一步相当于做了一个“格式闭环验收”：<br> <strong>导出流程写出的字节数 &#x3D; 文件真实大小</strong>，没有少写、多写或错写 dtype 导致的偏差。</p>
+<hr>
+<h2 id="Debug-的“工程收获”：到底学到了什么？"><a href="#Debug-的“工程收获”：到底学到了什么？" class="headerlink" title="Debug 的“工程收获”：到底学到了什么？"></a>Debug 的“工程收获”：到底学到了什么？</h2><p>把今天的 Debug 体验总结成一句话： Transformer 直观地变成了“可用偏移量验证的二进制协议”。</p>
+<p>具体体现在：</p>
+<ul>
+<li>模型结构参数（dim&#x2F;layers&#x2F;heads&#x2F;hidden_dim&#x2F;seq_len）是写进 header 的硬约束</li>
+<li>每个组件（Norm &#x2F; Attention &#x2F; FFN &#x2F; RoPE）都对应一段可计算的 <code>numel*4</code> 字节增量</li>
+<li><code>.bin</code> 的读写顺序是一种“契约”：写端怎么排，读端就必须怎么读；Debug 是把契约讲清楚的最快方式</li>
+</ul>
+<hr>
+<h2 id="附：在-VSCode-WSL-里有用的-Debug-小技巧"><a href="#附：在-VSCode-WSL-里有用的-Debug-小技巧" class="headerlink" title="附：在 VSCode&#x2F;WSL 里有用的 Debug 小技巧"></a>附：在 VSCode&#x2F;WSL 里有用的 Debug 小技巧</h2><ul>
+<li>断点要下在函数体可执行行</li>
+<li>循环很多时：给断点设置 <strong>Hit Count&#x3D;1</strong>，只停第一层做验证</li>
+<li>用 Debug Console 记录块级增量：<ul>
+<li><code>start = out_file.tell()</code> → 跑到下一个块 → <code>out_file.tell()-start</code></li>
+</ul>
+</li>
+<li>永远记住：<code>out_file.tell()</code> 单位是 <strong>bytes</strong></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
